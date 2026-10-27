@@ -4,7 +4,9 @@
 -- Gerado em 25/10/2026 a partir dos models do Django (backend/apps/*/models.py),
 -- no estado das migrations do branch feat_ondas_1_2, e conferido contra o banco
 -- criado por `manage.py migrate`: mesmas colunas, tipos, nulidade, defaults,
--- restricoes e indices. So a ordem das colunas e alguns nomes gerados pelo
+-- restricoes e indices. Atualizado em 26/10/2026 com a migration
+-- opportunities.0007 (prioridade da Oportunidade). A onda 4 (SPEC-23/14/15)
+-- nao alterou o schema. So a ordem das colunas e alguns nomes gerados pelo
 -- Django podem diferir: migration acrescenta campo novo no fim da tabela, e o
 -- nome de indice e chave que o Django gera guarda o nome antigo da tabela
 -- quando ela foi renomeada. `auth_group_permissions.id` sai como bigint, que
@@ -15,7 +17,7 @@
 --   createdb pdconnect
 --   psql -d pdconnect -f querys.sql
 --
--- Conteudo: 45 tabelas, 92 indices, 77 chaves estrangeiras/unique.
+-- Conteudo: 45 tabelas, 93 indices, 77 chaves estrangeiras/unique.
 --
 -- Convencao de nomes (core/tests/test_padrao_do_schema.py): tabelas e colunas
 -- do projeto em portugues, chave primaria e estrangeira com prefixo `id_`. As
@@ -303,8 +305,10 @@ CREATE TABLE "Oportunidade" (
     "status" varchar(20) NOT NULL,
     "data_criacao" timestamp with time zone NOT NULL,
     "atualizada_em" timestamp with time zone NOT NULL,
+    "prioridade" varchar(5) NOT NULL DEFAULT 'media',
     CONSTRAINT "ck_oportunidade_origem" CHECK ("origem" IN ('externo', 'interna')),
     CONSTRAINT "ck_oportunidade_status" CHECK ("status" IN ('entrada', 'estruturacao', 'competencias', 'matching', 'pre_analise', 'aguardando_decisao', 'continuar', 'revisar', 'arquivada')),
+    CONSTRAINT "ck_oportunidade_prioridade" CHECK ("prioridade" IN ('alta', 'media', 'baixa')),
     CONSTRAINT "ck_oportunidade_origem_demandante" CHECK ((("id_demandante" IS NULL AND "origem" = 'interna') OR ("id_demandante" IS NOT NULL AND "origem" = 'externo')))
 );
 
@@ -760,6 +764,7 @@ CREATE INDEX "Oportunidade_id_demandante_211bf9da" ON "Oportunidade" ("id_demand
 CREATE INDEX "Oportunidade_id_criado_por_686fa56d" ON "Oportunidade" ("id_criado_por");
 CREATE INDEX "Oportunidade_id_responsavel_d6307ad9" ON "Oportunidade" ("id_responsavel");
 CREATE INDEX "idx_oport_fila_supervisor" ON "Oportunidade" ("status", "atualizada_em" DESC);
+CREATE INDEX "idx_oport_status_prioridade" ON "Oportunidade" ("status", "prioridade");
 
 -- Organizacao
 CREATE INDEX "Organizacao_cnpj_afda76a3_like" ON "Organizacao" ("cnpj" varchar_pattern_ops);
